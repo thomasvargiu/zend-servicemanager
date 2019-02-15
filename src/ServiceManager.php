@@ -20,6 +20,7 @@ use Zend\ServiceManager\Exception\CyclicAliasException;
 use Zend\ServiceManager\Exception\InvalidArgumentException;
 use Zend\ServiceManager\Exception\ServiceNotCreatedException;
 use Zend\ServiceManager\Exception\ServiceNotFoundException;
+use Zend\Stdlib\ArrayUtils;
 
 /**
  * Service Manager.
@@ -337,7 +338,7 @@ class ServiceManager implements ServiceLocatorInterface
         }
 
         if (isset($config['delegators'])) {
-            $this->delegators = array_merge_recursive($this->delegators, $config['delegators']);
+            $this->delegators = ArrayUtils::merge($this->delegators, $config['delegators']);
         }
 
         if (isset($config['shared'])) {
@@ -357,7 +358,7 @@ class ServiceManager implements ServiceLocatorInterface
         // If lazy service configuration was provided, reset the lazy services
         // delegator factory.
         if (isset($config['lazy_services']) && ! empty($config['lazy_services'])) {
-            $this->lazyServices          = array_merge_recursive($this->lazyServices, $config['lazy_services']);
+            $this->lazyServices          = ArrayUtils::merge($this->lazyServices, $config['lazy_services']);
             $this->lazyServicesDelegator = null;
         }
 

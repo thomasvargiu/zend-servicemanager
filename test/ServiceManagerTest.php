@@ -10,6 +10,7 @@ namespace ZendTest\ServiceManager;
 use DateTime;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use ReflectionObject;
 use stdClass;
 use Zend\ServiceManager\Factory\FactoryInterface;
 use Zend\ServiceManager\Factory\InvokableFactory;
@@ -282,5 +283,35 @@ class ServiceManagerTest extends TestCase
         ];
         $serviceManager = new SimpleServiceManager($config);
         $this->assertEquals(stdClass::class, get_class($serviceManager->get(stdClass::class)));
+    }
+
+    /**
+     * Hotfix #279
+     * @see https://github.com/zendframework/zend-servicemanager/issues/279
+     */
+    public function testConfigureMultipleTimes()
+    {
+        $config = [
+            'delegators' => [
+                'Foo' => 'FooDelegator',
+            ],
+            'lazy_services' => [
+                'class_map' => [
+                    'Foo' => 'Foo',
+                ],
+            ]
+        ];
+
+        $serviceManager = new ServiceManager($config);
+        $serviceManager->configure($config);
+
+        $ref = new ReflectionObject($serviceManager);
+        $delegatorsProperty = $ref->getProperty('delegators');
+        $delegatorsProperty->setAccessible(true);
+        $lazyServicesProperty = $ref->getProperty('lazyServices');
+        $lazyServicesProperty->setAccessible(true);
+
+        self::assertSame($config['delegators'], $delegatorsProperty->getValue($serviceManager));
+        self::assertSame($config['lazy_services'], $lazyServicesProperty->getValue($serviceManager));
     }
 }
